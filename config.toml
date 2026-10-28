@@ -1,0 +1,18 @@
+# Main parameters. Restart server.py after editing; reload the page.
+
+[area]
+width = 480          # drawing area, px
+height = 480
+
+[draw]
+pencil_width = 14    # diameter of the dot marking the current point, px
+trail_width = 20     # width of the trail drawn on screen, px
+
+[inference]
+timeout_s = 4.0      # seconds from a trail's first point until the digit is inferred (brief: 3–5 s)
+stroke_width = 2.5   # trail width in the 28x28 image the network sees, px (MNIST strokes are ~2–3 px)
+
+[server]
+host = "127.0.0.1"   # "0.0.0.0" once the ESP32 has to reach it over WiFi
+port = 8000
+model = "model.npz"  # written by train.py

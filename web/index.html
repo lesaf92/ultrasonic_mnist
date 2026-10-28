@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ultrasonic MNIST</title>
+<style>
+  :root {
+    --bg: #f4f3ef; --panel: #ffffff; --area: #ffffff; --ink: #1c1c1e; --muted: #6b6b72;
+    --line: #e2e0da; --accent: #2f6fdf; --trail: #1c1c1e; --pencil: #e0533d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141416; --panel: #1d1d20; --area: #0e0e10; --ink: #ececef; --muted: #9a9aa3;
+      --line: #2d2d32; --accent: #6c9cff; --trail: #ececef; --pencil: #ff7a63;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141416; --panel: #1d1d20; --area: #0e0e10; --ink: #ececef; --muted: #9a9aa3;
+    --line: #2d2d32; --accent: #6c9cff; --trail: #ececef; --pencil: #ff7a63;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  [role="tablist"] { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+  [role="tab"] {
+    font: inherit; color: var(--muted); background: none; border: 0; padding: 8px 14px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .layout { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+  #area {
+    display: block; max-width: 100%; height: auto; background: var(--area);
+    border: 1px solid var(--line); border-radius: 8px; touch-action: none; cursor: crosshair;
+  }
+  .side { flex: 1 1 220px; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  #status { color: var(--muted); margin: 0 0 12px; min-height: 2.8em; }
+  .timer { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 16px; }
+  #bar { height: 100%; width: 0; background: var(--accent); }
+  .result { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  #digit { font-size: 56px; font-weight: 600; line-height: 1; min-width: 1ch; font-variant-numeric: tabular-nums; }
+  #small { width: 84px; height: 84px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; }
+  .probs { display: grid; grid-template-columns: 1ch 1fr 3.5em; gap: 4px 8px; align-items: center; font-variant-numeric: tabular-nums; }
+  .probs .track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .probs .fill { height: 100%; width: 0; background: var(--accent); }
+  .probs .pct { color: var(--muted); text-align: right; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Ultrasonic MNIST</h1>
+  <div role="tablist">
+    <button role="tab" aria-selected="true" data-source="mouse">Mouse</button>
+    <button role="tab" aria-selected="false" data-source="esp32">ESP32</button>
+  </div>
+  <div class="layout">
+    <canvas id="area"></canvas>
+    <div class="side">
+      <p id="status" aria-live="polite"></p>
+      <div class="timer"><div id="bar"></div></div>
+      <div class="result">
+        <div id="digit">–</div>
+        <canvas id="small" width="28" height="28" title="What the network sees"></canvas>
+      </div>
+      <div class="probs" id="probs"></div>
+    </div>
+  </div>
+</main>
+<script type="module">
+const cfg = await (await fetch('/config')).json();
+const area = document.getElementById('area');
+const ctx = area.getContext('2d');
+const small = document.getElementById('small').getContext('2d', { willReadFrequently: true });
+const status = document.getElementById('status');
+const bar = document.getElementById('bar');
+area.width = cfg.area.width;
+area.height = cfg.area.height;
+
+const probs = document.getElementById('probs');
+const fills = [...Array(10).keys()].map(d => {
+  probs.insertAdjacentHTML('beforeend',
+    `<span>${d}</span><div class="track"><div class="fill"></div></div><span class="pct"></span>`);
+  return [probs.querySelectorAll('.fill')[d], probs.querySelectorAll('.pct')[d]];
+});
+
+let source = 'mouse', strokes = [], timer = null, trailId = 0, drawing = false;
+const idleText = {
+  mouse: `Draw a digit. It is read ${cfg.inference.timeout_s} s after the first point.`,
+  esp32: 'ESP32 input is not connected yet.',
+};
+status.textContent = idleText.mouse;
+
+// Shared by both sources: the ESP32 stream will call addPoint() the same way the mouse does.
+function addPoint(x, y, newStroke) {
+  if (!timer) startTrail();
+  if (newStroke || !strokes.length) strokes.push([]);
+  strokes.at(-1).push([x, y]);
+  render([x, y]);
+}
+
+function startTrail() {
+  strokes = [];
+  trailId++;
+  timer = setTimeout(finishTrail, cfg.inference.timeout_s * 1000);
+  bar.getAnimations().forEach(a => a.cancel());
+  bar.animate([{ width: '0%' }, { width: '100%' }], { duration: cfg.inference.timeout_s * 1000, fill: 'forwards' });
+  status.textContent = 'Drawing…';
+}
+
+async function finishTrail() {
+  timer = null;
+  drawing = false;
+  render(null);
+  const id = trailId;
+  status.textContent = 'Reading…';
+  try {
+    const res = await fetch('/predict', { method: 'POST', body: JSON.stringify({ pixels: rasterize() }) });
+    const out = await res.json();
+    if (!res.ok) throw new Error(out.error);
+    if (id !== trailId) return;  // a newer trail started meanwhile
+    showResult(out.probs);
+    status.textContent = `Read as ${out.digit} (${(out.probs[out.digit] * 100).toFixed(0)}%). ${idleText[source]}`;
+  } catch (e) {
+    status.textContent = `Inference failed: ${e.message}`;
+  }
+}
+
+function showResult(p) {
+  document.getElementById('digit').textContent = p ? p.indexOf(Math.max(...p)) : '–';
+  fills.forEach(([fill, pct], d) => {
+    fill.style.width = p ? `${p[d] * 100}%` : '0';
+    pct.textContent = p ? `${(p[d] * 100).toFixed(1)}%` : '';
+  });
+  if (!p) small.clearRect(0, 0, 28, 28);
+}
+
+function strokePaths(c) {
+  for (const s of strokes) {
+    c.beginPath();
+    c.moveTo(...s[0]);
+    for (const p of s) c.lineTo(...p);
+    c.stroke();
+  }
+}
+
+function render(pencil) {
+  const css = getComputedStyle(area);
+  ctx.clearRect(0, 0, area.width, area.height);
+  ctx.globalAlpha = timer ? 1 : 0.4;  // a finished trail stays dimmed until the next one
+  ctx.strokeStyle = css.getPropertyValue('--trail').trim();
+  ctx.lineWidth = cfg.draw.trail_width;
+  ctx.lineCap = ctx.lineJoin = 'round';
+  strokePaths(ctx);
+  ctx.globalAlpha = 1;
+  if (pencil) {
+    ctx.fillStyle = css.getPropertyValue('--pencil').trim();
+    ctx.beginPath();
+    ctx.arc(...pencil, cfg.draw.pencil_width / 2, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+
+// MNIST style: the digit's box scaled to fit 20x20, centred in 28x28, white on black.
+// The server then moves the center of mass to the middle.
+function rasterize() {
+  const xs = strokes.flat().map(p => p[0]), ys = strokes.flat().map(p => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const w = cfg.inference.stroke_width;
+  const k = (20 - w) / Math.max(x1 - x0, y1 - y0, 1);
+  small.setTransform(1, 0, 0, 1, 0, 0);
+  small.fillStyle = '#000';
+  small.fillRect(0, 0, 28, 28);
+  small.setTransform(k, 0, 0, k, 14 - k * (x0 + x1) / 2, 14 - k * (y0 + y1) / 2);
+  small.strokeStyle = '#fff';
+  small.lineWidth = w / k;
+  small.lineCap = small.lineJoin = 'round';
+  strokePaths(small);
+  const data = small.getImageData(0, 0, 28, 28).data;
+  return Array.from({ length: 784 }, (_, i) => data[i * 4] / 255);
+}
+
+function pos(e) {
+  const r = area.getBoundingClientRect();
+  return [(e.clientX - r.left) * area.width / r.width, (e.clientY - r.top) * area.height / r.height];
+}
+
+area.addEventListener('pointerdown', e => {
+  if (source !== 'mouse') return;
+  area.setPointerCapture(e.pointerId);
+  drawing = true;
+  addPoint(...pos(e), true);
+});
+area.addEventListener('pointermove', e => {
+  if (source !== 'mouse') return;
+  if (drawing) addPoint(...pos(e), false);
+  else render(pos(e));
+});
+area.addEventListener('pointerup', () => { drawing = false; });
+area.addEventListener('pointercancel', () => { drawing = false; });
+area.addEventListener('pointerleave', () => { if (!drawing) render(null); });
+
+for (const tab of document.querySelectorAll('[role="tab"]')) {
+  tab.addEventListener('click', () => {
+    for (const t of document.querySelectorAll('[role="tab"]')) t.setAttribute('aria-selected', t === tab);
+    source = tab.dataset.source;
+    clearTimeout(timer);
+    timer = null;
+    drawing = false;
+    strokes = [];
+    trailId++;
+    bar.getAnimations().forEach(a => a.cancel());
+    area.style.cursor = source === 'mouse' ? 'crosshair' : 'default';
+    render(null);
+    showResult(null);
+    status.textContent = idleText[source];
+  });
+}
+</script>
+</body>
+</html>
