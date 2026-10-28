@@ -1,12 +1,12 @@
 # Plan
 
-This file tracks the project's objectives: main quests that build the system, side quests that are tangents, and candidate ideas. Each finished objective gets its pull request or commit in the Git column; check one with `git show --stat <commit>`. The folder is not a git repository yet, so that column is empty for now.
+This file tracks the project's objectives: main quests that build the system, side quests that are tangents, and candidate ideas. Each finished objective gets its pull request or commit in the Git column; check one with `git show --stat <commit>`. Everything built before the repository existed landed in its first commit, e9c1862.
 
 Candidates stay **Not confirmed** until the owner approves one or asks for it to be worked on. It then moves up as a main or side quest with the next free number and notes its old one ("was C7"). The file is kept up to date as [the recipe](../plan-recipe.md#keeping-it-up-to-date-every-later-session) describes.
 
 **Big picture:** an ESP32 with two ultrasonic sensors tracks a point in 2D space and streams it over WiFi to a computer, whose web page draws the point's trail live and, after a configurable 3–5 s timeout, names the digit drawn using a neural network trained from scratch on MNIST or an equivalent dataset.
 
-**Now:** the last objectives finished are S1 (Mouse tab) and M7 (config file), not committed, 2026-10-28. The next one is not chosen yet; M1 and M2 (the ESP32 side) finish M3 and M6, and wait on C1 and C2.
+**Now:** the last objectives finished are S1 (Mouse tab) and M7 (config file), e9c1862, 2026-10-28. The next one is not chosen yet; M1 and M2 (the ESP32 side) finish M3 and M6, and wait on C1 and C2.
 
 ## Main quests
 
@@ -16,14 +16,14 @@ Objectives that lead to the big picture, in the planned order. M1–M6 come from
 |---|---|---|---|---|
 | M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Open | — | — |
 | M2 | The ESP32 streams the points to the computer over WiFi | Open | — | — |
-| M3 | A web page on the computer draws the trail in real time | Partly done: page with Mouse and ESP32 tabs; the ESP32 tab waits on M2 | — | [README: run](../README.md#run) |
-| M4 | A trail ends after a fixed, configurable timeout (3–5 s) and becomes one digit drawing | Done; the timeout counts from the first point (C6 asks if that is right) | — | [config](../config.toml) |
-| M5 | A neural network trained from scratch on MNIST, or an equivalent dataset | Partly done: C8 and C9 wait on owner | — | — |
-| M5.1 | NumPy 784-256-10 network trained from random weights on MNIST (`train.py`), 97.5% test accuracy | Done | — | [README: run](../README.md#run) |
-| M6 | The network names the digit in a finished trail, shown on the web page | Partly done: works in the Mouse tab; the ESP32 tab waits on M2 | — | — |
-| M6.1 | Turn the trail into an MNIST-style 28×28 image (centred, scaled, stroke width) | Done | — | — |
-| M6.2 | Run inference on that image (`POST /predict`) and show the digit and all ten probabilities | Done | — | — |
-| M7 | `config.toml` sets the main parameters: area size, pencil and trail width, timeout, network stroke width, server | Done | — | [config](../config.toml) |
+| M3 | A web page on the computer draws the trail in real time | Partly done: page with Mouse and ESP32 tabs; the ESP32 tab waits on M2 | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
+| M4 | A trail ends after a fixed, configurable timeout (3–5 s) and becomes one digit drawing | Done; the timeout counts from the first point (C6 asks if that is right) | e9c1862, 2026-10-28 | [config](../config.toml) |
+| M5 | A neural network trained from scratch on MNIST, or an equivalent dataset | Partly done: C8 and C9 wait on owner | e9c1862, 2026-10-28 | — |
+| M5.1 | NumPy 784-256-10 network trained from random weights on MNIST (`train.py`), 97.5% test accuracy | Done | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
+| M6 | The network names the digit in a finished trail, shown on the web page | Partly done: works in the Mouse tab; the ESP32 tab waits on M2 | e9c1862, 2026-10-28 | — |
+| M6.1 | Turn the trail into an MNIST-style 28×28 image (centred, scaled, stroke width) | Done | e9c1862, 2026-10-28 | — |
+| M6.2 | Run inference on that image (`POST /predict`) and show the digit and all ten probabilities | Done | e9c1862, 2026-10-28 | — |
+| M7 | `config.toml` sets the main parameters: area size, pencil and trail width, timeout, network stroke width, server | Done | e9c1862, 2026-10-28 | [config](../config.toml) |
 
 ## Side quests
 
@@ -31,7 +31,7 @@ Tangents such as tooling, simulators or viewers. S1 feeds M3, M4 and M6.
 
 | # | Objective | Status | Git | Documentation |
 |---|---|---|---|---|
-| S1 | Mouse tab: draw with the mouse to test trail, timeout and inference without hardware (was C12, mouse part) | Done | — | [README: run](../README.md#run) |
+| S1 | Mouse tab: draw with the mouse to test trail, timeout and inference without hardware (was C12, mouse part) | Done | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
 
 ## Candidates (not confirmed)
 
