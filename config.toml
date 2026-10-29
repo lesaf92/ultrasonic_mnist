@@ -13,6 +13,14 @@ timeout_s = 4.0      # seconds from a trail's first point until the digit is inf
 stroke_width = 2.5   # trail width in the 28x28 image the network sees, px (MNIST strokes are ~2–3 px)
 
 [server]
-host = "127.0.0.1"   # "0.0.0.0" once the ESP32 has to reach it over WiFi
+host = "127.0.0.1"   # the page; the ESP32 talks to udp_port below instead, so this can stay local
 port = 8000
 model = "model.npz"  # written by train.py
+
+[esp32]
+udp_port = 8001      # SERVER_PORT in firmware/config.h; listened on all network interfaces
+# Until the sensor mounting is chosen (plan C1), each sensor gives one axis. The distance at the first number
+# maps to the area's left (x) or top (y) edge, the second to the opposite edge; swap them to flip the axis.
+# Readings outside these ranges are dropped. Calibrate by reading the distances shown in the ESP32 tab.
+x_mm = [50, 350]     # sensor A
+y_mm = [50, 350]     # sensor B

@@ -1,3 +1,4 @@
 data/
 model.npz
 __pycache__/
+firmware/config.h

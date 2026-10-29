@@ -8,43 +8,92 @@
   :root {
     --bg: #f4f3ef; --panel: #ffffff; --area: #ffffff; --ink: #1c1c1e; --muted: #6b6b72;
     --line: #e2e0da; --accent: #2f6fdf; --trail: #1c1c1e; --pencil: #e0533d;
+    --series-1: #2a78d6; --series-2: #eb6834; --grid: #e1e0d9; --axis: #c3c2b7;
+    --cell-zero: #f1f0ec; --cell-diag: #d3d1c9; --seq-lo: #cde2fb; --seq-hi: #104281;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #141416; --panel: #1d1d20; --area: #0e0e10; --ink: #ececef; --muted: #9a9aa3;
       --line: #2d2d32; --accent: #6c9cff; --trail: #ececef; --pencil: #ff7a63;
+      --series-1: #3987e5; --series-2: #d95926; --grid: #2c2c2a; --axis: #383835;
+      --cell-zero: #26262a; --cell-diag: #45454c; --seq-lo: #1b2d45; --seq-hi: #9ec5f4;
     }
   }
   :root[data-theme="dark"] {
     --bg: #141416; --panel: #1d1d20; --area: #0e0e10; --ink: #ececef; --muted: #9a9aa3;
     --line: #2d2d32; --accent: #6c9cff; --trail: #ececef; --pencil: #ff7a63;
+    --series-1: #3987e5; --series-2: #d95926; --grid: #2c2c2a; --axis: #383835;
+    --cell-zero: #26262a; --cell-diag: #45454c; --seq-lo: #1b2d45; --seq-hi: #9ec5f4;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 system-ui, sans-serif; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
   main { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
   h1 { font-size: 20px; margin: 0 0 16px; }
+  code { font-size: 13px; background: var(--line); padding: 1px 4px; border-radius: 3px; overflow-wrap: anywhere; }
   [role="tablist"] { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
   [role="tab"] {
     font: inherit; color: var(--muted); background: none; border: 0; padding: 8px 14px; cursor: pointer;
     border-bottom: 2px solid transparent; margin-bottom: -1px;
   }
   [role="tab"][aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
   .layout { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
   #area {
     display: block; max-width: 100%; height: auto; background: var(--area);
     border: 1px solid var(--line); border-radius: 8px; touch-action: none; cursor: crosshair;
   }
   .side { flex: 1 1 220px; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
-  #status { color: var(--muted); margin: 0 0 12px; min-height: 2.8em; }
+  #status { color: var(--muted); margin: 0 0 12px; min-height: 3em; }
   .timer { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 16px; }
   #bar { height: 100%; width: 0; background: var(--accent); }
   .result { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-  #digit { font-size: 56px; font-weight: 600; line-height: 1; min-width: 1ch; font-variant-numeric: tabular-nums; }
-  #small { width: 84px; height: 84px; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; }
-  .probs { display: grid; grid-template-columns: 1ch 1fr 3.5em; gap: 4px 8px; align-items: center; font-variant-numeric: tabular-nums; }
+  #guess { font-size: 56px; font-weight: 600; line-height: 1; min-width: 1ch; overflow-wrap: anywhere; }
+  #small { width: 84px; height: 84px; flex: none; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 4px; }
+  .probs { display: grid; grid-template-columns: auto 1fr 3.5em; gap: 4px 8px; align-items: center; font-variant-numeric: tabular-nums; }
   .probs .track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
   .probs .fill { height: 100%; width: 0; background: var(--accent); }
   .probs .pct { color: var(--muted); text-align: right; font-size: 13px; }
+
+  #model h2 { font-size: 17px; margin: 32px 0 8px; }
+  #model p, #model li { max-width: 70ch; }
+  .note { color: var(--muted); font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .tile, .card, .arch .box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  .tile { padding: 12px 14px; }
+  .tile .k { color: var(--muted); font-size: 13px; }
+  .tile .v { font-size: 22px; font-weight: 600; }
+  .tile.hero .v { font-size: 48px; line-height: 1.1; }
+  .card { padding: 16px; margin: 12px 0; min-width: 0; }
+  .ctitle { font-weight: 600; margin-bottom: 4px; }
+  .arch { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .arch .box { padding: 10px 12px; }
+  .arch .box b { display: block; }
+  .arch .box span { color: var(--muted); font-size: 13px; }
+  .arch .arrow { color: var(--muted); font-size: 20px; }
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; color: var(--muted); font-size: 13px; margin: 8px 0; }
+  .key { display: inline-block; width: 16px; height: 2px; border-radius: 1px; vertical-align: middle; margin-right: 6px; }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  #epochs svg { display: block; }
+  #epochs text { fill: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  #epochs text.end { fill: var(--ink); }
+  .matrix { display: grid; gap: 2px; max-width: 520px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .matrix .h { color: var(--muted); text-align: center; align-self: end; overflow-wrap: anywhere; }
+  .matrix .rh { color: var(--muted); text-align: right; padding-right: 6px; align-self: center; overflow-wrap: anywhere; }
+  .matrix .acc { color: var(--muted); padding-left: 8px; align-self: center; }
+  .matrix .c { aspect-ratio: 1; border-radius: 2px; }
+  .matrix .c:hover, .matrix .c:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  #tip {
+    position: fixed; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    padding: 6px 10px; font-size: 13px; box-shadow: 0 2px 10px rgb(0 0 0 / 0.18); z-index: 1; max-width: 260px;
+  }
+  #tip .tt { color: var(--muted); }
+  #tip b { font-size: 15px; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 8px; }
+  th, td { text-align: left; padding: 4px 16px 4px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -53,45 +102,152 @@
   <div role="tablist">
     <button role="tab" aria-selected="true" data-source="mouse">Mouse</button>
     <button role="tab" aria-selected="false" data-source="esp32">ESP32</button>
+    <button role="tab" aria-selected="false" data-source="model">Model</button>
   </div>
+
   <div class="layout">
     <canvas id="area"></canvas>
     <div class="side">
       <p id="status" aria-live="polite"></p>
+      <p id="live" class="note" hidden></p>
       <div class="timer"><div id="bar"></div></div>
       <div class="result">
-        <div id="digit">–</div>
+        <div id="guess">–</div>
         <canvas id="small" width="28" height="28" title="What the network sees"></canvas>
       </div>
       <div class="probs" id="probs"></div>
     </div>
   </div>
+
+  <section id="model" hidden>
+    <div class="tiles">
+      <div class="tile hero"><div class="k">Test accuracy</div><div class="v" data-fact="test"></div></div>
+      <div class="tile"><div class="k">Train accuracy</div><div class="v" data-fact="train"></div></div>
+      <div class="tile"><div class="k">Parameters</div><div class="v" data-fact="params"></div></div>
+      <div class="tile"><div class="k">Training time</div><div class="v" data-fact="seconds"></div></div>
+    </div>
+    <p class="note">Trained <span data-fact="trained"></span> on <span data-fact="trainSize"></span> images, tested on
+      <span data-fact="testSize"></span> images it never saw. MNIST test images alone: <span data-fact="mnistTest"></span>.</p>
+
+    <h2>Network</h2>
+    <div class="arch">
+      <div class="box"><b>Input</b><span>28×28 image, 784 values in 0–1</span></div><span class="arrow">→</span>
+      <div class="box"><b>Hidden layer</b><span><span data-fact="hidden"></span> units, ReLU</span></div><span class="arrow">→</span>
+      <div class="box"><b>Output layer</b><span><span data-fact="outputs"></span> units, softmax</span></div><span class="arrow">→</span>
+      <div class="box"><b>Label</b><span>highest probability</span></div>
+    </div>
+    <p>A multilayer perceptron with one hidden layer, written with NumPy only in <code>train.py</code>. The forward
+      pass, the softmax cross-entropy loss and backpropagation are coded by hand, and training starts from random
+      weights: no framework, no pretrained weights.</p>
+    <table>
+      <tr><th>Weights</th><td>input → hidden <span data-fact="w1"></span>, hidden → output <span data-fact="w2"></span> (biases included)</td></tr>
+      <tr><th>Initialisation</th><td>He: normal with σ = √(2 / inputs), biases 0</td></tr>
+      <tr><th>Loss</th><td>Cross-entropy on the softmax output</td></tr>
+      <tr><th>Optimiser</th><td>Mini-batch SGD: batch <span data-fact="batch"></span>, learning rate <span data-fact="lr"></span>,
+        <span data-fact="epochs"></span> epochs, random seed <span data-fact="seed"></span></td></tr>
+    </table>
+
+    <h2>Training results</h2>
+    <div class="card">
+      <div class="ctitle">Accuracy after each epoch</div>
+      <div class="legend">
+        <span><span class="key" style="background: var(--series-1)"></span>Train</span>
+        <span><span class="key" style="background: var(--series-2)"></span>Test</span>
+      </div>
+      <div id="epochs"></div>
+      <details><summary>Table view</summary><table id="epochTable"></table></details>
+    </div>
+    <p>If train accuracy keeps rising while test accuracy stalls or falls, the network is memorising its training
+      images (overfitting), and more epochs won't help.</p>
+    <div class="card">
+      <div class="ctitle">Confusion matrix on the test set</div>
+      <p class="note">Rows are the true label, columns what the network read. Gray diagonal cells are correct reads;
+        blue cells are mistakes, stronger blue for more. Hover or focus a cell for its count.</p>
+      <div class="legend">
+        <span><span class="swatch" style="background: var(--cell-zero)"></span>no mistakes</span>
+        <span><span class="swatch" style="width: 48px; background: linear-gradient(90deg, var(--seq-lo), var(--seq-hi))"></span>1 to <span data-fact="maxErr"></span> mistakes</span>
+        <span><span class="swatch" style="background: var(--cell-diag)"></span>correct</span>
+      </div>
+      <div class="matrix" id="matrix"></div>
+      <details><summary>Table view</summary><table id="classTable"></table></details>
+    </div>
+
+    <h2>Dataset</h2>
+    <p><b>MNIST</b> (Yann LeCun, Corinna Cortes and Christopher Burges, 1998) has 70,000 handwritten digits taken
+      from NIST's databases: 60,000 for training and 10,000 for testing, written by US Census Bureau employees and
+      high-school students. The training and test sets come from different writers. Each digit was scaled to fit a
+      20×20 box, anti-aliased to grayscale, and placed in a 28×28 image with its centre of mass in the middle.</p>
+    <p><code>train.py</code> downloads the four files from the Google Cloud mirror
+      (<code>storage.googleapis.com/cvdf-datasets/mnist/</code>), because the original site at yann.lecun.com is
+      often unavailable, and keeps them in <code>data/</code>.</p>
+    <p data-fact="custom"></p>
+
+    <h2>From trail to input</h2>
+    <p>A trail becomes an image the same way MNIST digits did, so the network sees what it was trained on:</p>
+    <ol>
+      <li>The trail's bounding box is scaled to fit 20×20 pixels, keeping its aspect ratio, and centred in a 28×28 image.</li>
+      <li>It is drawn white on black with a <span data-fact="stroke"></span> px line (<code>stroke_width</code> in
+        <code>config.toml</code>). The on-screen <code>trail_width</code> plays no part.</li>
+      <li>The server moves the image's centre of mass to the middle.</li>
+      <li>The 784 pixel values go through the network, and the label with the highest probability is the answer.</li>
+    </ol>
+
+    <h2>Train your own symbol</h2>
+    <p>This page only reads drawings; it never trains. To teach the network a letter, a symbol or your own way of
+      writing a digit, train it yourself from images:</p>
+    <ol>
+      <li><b>Make the images.</b> One drawing per image, at least 30 per symbol, varying size, slant and position.
+        Any size and any format Pillow reads (PNG, JPEG, BMP…). Draw a dark symbol on a plain light background, or a
+        light one on black, with a pen about an eighth of the symbol's height thick, as in MNIST.</li>
+      <li><b>Copy them into <code>data/custom/&lt;label&gt;/</code>.</b> The folder's name is the label:
+        <code>data/custom/A/</code>, <code>data/custom/plus/</code>. A digit's folder
+        (<code>data/custom/7/</code>) adds your handwriting to that digit. File names don't matter.</li>
+      <li><b>Run <code>python3 train.py</code>.</b> It needs Pillow for this (<code>pip install pillow</code>). It
+        crops each image to its symbol, scales it to fit 20×20 and centres it in 28×28, as MNIST was made. Labels
+        that aren't digits become extra outputs after 0–9. Every 5th image of each label, in file-name order, is held
+        out for testing; the rest are copied 1,000 times with small shifts, so a few dozen images aren't drowned out
+        by MNIST's ~6,000 per digit.</li>
+      <li><b>Restart <code>server.py</code> and reload the page.</b> The new labels appear among the probabilities,
+        and this tab shows how well they were learnt and which digits they get confused with.</li>
+    </ol>
+    <p>A symbol unlike every digit (<code>+</code>, <code>X</code>) learns well from a few dozen images. One that
+      resembles a digit (<code>O</code> and 0, <code>l</code> and 1, <code>S</code> and 5) gets confused with it,
+      and the confusion matrix shows how often. For a whole alphabet, a letters dataset such as EMNIST Letters beats
+      drawing hundreds of samples by hand. To go back to digits only, empty <code>data/custom/</code> and train
+      again.</p>
+  </section>
 </main>
+<div id="tip" hidden></div>
 <script type="module">
-const cfg = await (await fetch('/config')).json();
+const [cfg, info] = await Promise.all(['/config', '/model'].map(u => fetch(u).then(r => r.json())));
+const labels = info.labels;
+const pct = v => `${(v * 100).toFixed(1)}%`;
+const el = (tag, cls = '', text = '') => Object.assign(document.createElement(tag), { className: cls, textContent: text });
+
 const area = document.getElementById('area');
 const ctx = area.getContext('2d');
 const small = document.getElementById('small').getContext('2d', { willReadFrequently: true });
 const status = document.getElementById('status');
 const bar = document.getElementById('bar');
+const live = document.getElementById('live');
 area.width = cfg.area.width;
 area.height = cfg.area.height;
 
-const probs = document.getElementById('probs');
-const fills = [...Array(10).keys()].map(d => {
-  probs.insertAdjacentHTML('beforeend',
-    `<span>${d}</span><div class="track"><div class="fill"></div></div><span class="pct"></span>`);
-  return [probs.querySelectorAll('.fill')[d], probs.querySelectorAll('.pct')[d]];
+const fills = labels.map(l => {
+  const fill = el('div', 'fill'), pctText = el('span', 'pct'), track = el('div', 'track');
+  track.append(fill);
+  document.getElementById('probs').append(el('span', '', l), track, pctText);
+  return [fill, pctText];
 });
 
 let source = 'mouse', strokes = [], timer = null, trailId = 0, drawing = false;
 const idleText = {
   mouse: `Draw a digit. It is read ${cfg.inference.timeout_s} s after the first point.`,
-  esp32: 'ESP32 input is not connected yet.',
+  esp32: `Move your hand over the sensors. It is read ${cfg.inference.timeout_s} s after the first point in the area.`,
 };
 status.textContent = idleText.mouse;
 
-// Shared by both sources: the ESP32 stream will call addPoint() the same way the mouse does.
+// Shared by both sources: mouse events and the ESP32 stream below.
 function addPoint(x, y, newStroke) {
   if (!timer) startTrail();
   if (newStroke || !strokes.length) strokes.push([]);
@@ -120,17 +276,17 @@ async function finishTrail() {
     if (!res.ok) throw new Error(out.error);
     if (id !== trailId) return;  // a newer trail started meanwhile
     showResult(out.probs);
-    status.textContent = `Read as ${out.digit} (${(out.probs[out.digit] * 100).toFixed(0)}%). ${idleText[source]}`;
+    status.textContent = `Read as ${out.label} (${pct(Math.max(...out.probs))}). ${idleText[source]}`;
   } catch (e) {
     status.textContent = `Inference failed: ${e.message}`;
   }
 }
 
 function showResult(p) {
-  document.getElementById('digit').textContent = p ? p.indexOf(Math.max(...p)) : '–';
-  fills.forEach(([fill, pct], d) => {
-    fill.style.width = p ? `${p[d] * 100}%` : '0';
-    pct.textContent = p ? `${(p[d] * 100).toFixed(1)}%` : '';
+  document.getElementById('guess').textContent = p ? labels[p.indexOf(Math.max(...p))] : '–';
+  fills.forEach(([fill, pctText], i) => {
+    fill.style.width = p ? `${p[i] * 100}%` : '0';
+    pctText.textContent = p ? pct(p[i]) : '';
   });
   if (!p) small.clearRect(0, 0, 28, 28);
 }
@@ -200,10 +356,27 @@ area.addEventListener('pointerup', () => { drawing = false; });
 area.addEventListener('pointercancel', () => { drawing = false; });
 area.addEventListener('pointerleave', () => { if (!drawing) render(null); });
 
+// server.py relays each UDP packet from the ESP32: d = sensor distances in mm (-1: no echo), p = area point or null.
+let lastPacket = 0;
+const mm = v => v < 0 ? 'no echo' : `${v} mm`;
+new EventSource('/stream').onmessage = e => {
+  const { d, p } = JSON.parse(e.data);
+  lastPacket = Date.now();
+  live.textContent = `Sensor A ${mm(d[0])}, sensor B ${mm(d[1])}${p ? '' : ': outside the area'}`;
+  if (source !== 'esp32') return;
+  if (p) addPoint(...p, false);
+  else render(null);
+};
+setInterval(() => {
+  if (Date.now() - lastPacket > 2000) live.textContent = `No data from the ESP32 (UDP port ${cfg.esp32.udp_port}).`;
+}, 1000);
+
 for (const tab of document.querySelectorAll('[role="tab"]')) {
   tab.addEventListener('click', () => {
     for (const t of document.querySelectorAll('[role="tab"]')) t.setAttribute('aria-selected', t === tab);
     source = tab.dataset.source;
+    document.querySelector('.layout').hidden = source === 'model';
+    document.getElementById('model').hidden = source !== 'model';
     clearTimeout(timer);
     timer = null;
     drawing = false;
@@ -211,11 +384,135 @@ for (const tab of document.querySelectorAll('[role="tab"]')) {
     trailId++;
     bar.getAnimations().forEach(a => a.cancel());
     area.style.cursor = source === 'mouse' ? 'crosshair' : 'default';
+    live.hidden = source !== 'esp32';
     render(null);
     showResult(null);
-    status.textContent = idleText[source];
+    status.textContent = idleText[source] ?? '';
   });
 }
+
+// ---- Model tab: everything below is read from the model file, so it follows each retraining.
+const hist = info.history, last = hist.at(-1), [, hidden, outputs] = info.layers;
+const C = info.confusion;
+const rowTotal = C.map(r => r.reduce((a, b) => a + b, 0));
+const maxErr = Math.max(0, ...C.flatMap((r, i) => r.filter((_, j) => j !== i)));
+const n = s => s.toLocaleString('en-US');
+const custom = Object.entries(info.custom);
+const facts = {
+  test: pct(last.test), train: pct(last.train), seconds: `${info.seconds} s`, trained: info.trained_at,
+  params: n(785 * hidden + (hidden + 1) * outputs), w1: n(785 * hidden), w2: n((hidden + 1) * outputs),
+  hidden, outputs, batch: info.batch, lr: info.lr, epochs: info.epochs, seed: info.seed,
+  trainSize: n(info.train_size), testSize: n(info.test_size), mnistTest: pct(info.mnist_test_accuracy),
+  maxErr, stroke: cfg.inference.stroke_width,
+  custom: custom.length
+    ? `This model also learnt the images in data/custom/: ${custom.map(([l, [tr, te]]) => `"${l}" (${tr} for training, ${te} for testing)`).join(', ')}.`
+    : 'This model was trained on MNIST only; data/custom/ was empty.',
+};
+for (const e of document.querySelectorAll('[data-fact]')) e.textContent = facts[e.dataset.fact];
+
+const tip = document.getElementById('tip');
+function showTip(x, y, heading, rows) {
+  tip.replaceChildren(el('div', 'tt', heading), ...rows.map(([value, name, color]) => {
+    const row = el('div');
+    if (color) {
+      const key = el('span', 'key');
+      key.style.background = color;
+      row.append(key);
+    }
+    row.append(el('b', '', value), ' ', el('span', 'tt', name));
+    return row;
+  }));
+  tip.hidden = false;
+  const flip = x + 16 + tip.offsetWidth > innerWidth - 8;
+  tip.style.left = `${flip ? x - 16 - tip.offsetWidth : x + 16}px`;
+  tip.style.top = `${Math.min(y + 16, innerHeight - tip.offsetHeight - 8)}px`;
+}
+const hideTip = () => { tip.hidden = true; };
+
+const series = [['train', 'Train', 'var(--series-1)'], ['test', 'Test', 'var(--series-2)']];
+const epochBox = document.getElementById('epochs');
+let drawnWidth = 0;
+function drawEpochs() {
+  const W = epochBox.clientWidth;
+  if (!W || W === drawnWidth) return;
+  drawnWidth = W;
+  const H = 220, L = 40, R = 96, T = 10, B = 24, m = hist.length;
+  const vals = hist.flatMap(e => [e.train, e.test]);
+  const lo = Math.floor(Math.min(...vals) * 100), hi = Math.max(Math.ceil(Math.max(...vals) * 100), lo + 1);
+  const x = i => L + (W - L - R) * (m > 1 ? i / (m - 1) : 0.5);
+  const y = v => T + (H - T - B) * (hi - v * 100) / (hi - lo);
+  let svg = '';
+  for (let k = lo; k <= hi; k += hi - lo > 6 ? 2 : 1) {
+    svg += `<line x1="${L}" x2="${W - R}" y1="${y(k / 100)}" y2="${y(k / 100)}" stroke="var(--${k === lo ? 'axis' : 'grid'})"/>`
+         + `<text x="${L - 8}" y="${y(k / 100) + 4}" text-anchor="end">${k}%</text>`;
+  }
+  const every = Math.ceil(m / 10);
+  hist.forEach((_, i) => {
+    if (i % every === 0 || i === m - 1) svg += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle">${i + 1}</text>`;
+  });
+  const ends = series.map(([k]) => y(last[k]));
+  for (const [k, name, color] of series) {
+    svg += `<polyline fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
+      points="${hist.map((e, i) => `${x(i)},${y(e[k])}`).join(' ')}"/>`
+         + `<circle cx="${x(m - 1)}" cy="${y(last[k])}" r="4" fill="${color}" stroke="var(--panel)" stroke-width="2"/>`;
+    if (Math.abs(ends[0] - ends[1]) >= 14) {  // end labels only when they don't collide; the legend covers the rest
+      svg += `<text class="end" x="${x(m - 1) + 10}" y="${y(last[k]) + 4}">${name} ${pct(last[k])}</text>`;
+    }
+  }
+  svg += `<g class="hover" visibility="hidden"><line y1="${T}" y2="${H - B}" stroke="var(--axis)"/>`
+       + series.map(([, , color]) => `<circle r="4" fill="${color}" stroke="var(--panel)" stroke-width="2"/>`).join('')
+       + `</g><rect x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
+  epochBox.innerHTML = `<svg width="${W}" height="${H}" role="img" aria-label="Train and test accuracy per epoch; values in the table view">${svg}</svg>`;
+  const svgEl = epochBox.firstChild, hover = svgEl.querySelector('.hover');
+  svgEl.addEventListener('pointermove', e => {
+    const r = svgEl.getBoundingClientRect();
+    const i = Math.max(0, Math.min(m - 1, Math.round((e.clientX - r.left - L) / ((W - L - R) / Math.max(m - 1, 1)))));
+    hover.setAttribute('visibility', 'visible');
+    hover.querySelector('line').setAttribute('x1', x(i));
+    hover.querySelector('line').setAttribute('x2', x(i));
+    hover.querySelectorAll('circle').forEach((c, s) => {
+      c.setAttribute('cx', x(i));
+      c.setAttribute('cy', y(hist[i][series[s][0]]));
+    });
+    showTip(e.clientX, e.clientY, `Epoch ${i + 1}`, series.map(([k, name, color]) => [pct(hist[i][k]), name, color]));
+  });
+  svgEl.addEventListener('pointerleave', () => { hover.setAttribute('visibility', 'hidden'); hideTip(); });
+}
+new ResizeObserver(drawEpochs).observe(epochBox);
+
+function fillTable(table, head, rows) {
+  const tr = cells => { const r = el('tr'); r.append(...cells); return r; };
+  table.append(tr(head.map(h => el('th', '', h))), ...rows.map(r => tr(r.map(v => el('td', '', v)))));
+}
+fillTable(document.getElementById('epochTable'), ['Epoch', 'Train', 'Test'],
+  hist.map((e, i) => [i + 1, pct(e.train), pct(e.test)]));
+
+const matrix = document.getElementById('matrix');
+matrix.style.gridTemplateColumns = `auto repeat(${labels.length}, minmax(0, 1fr)) auto`;
+matrix.append(el('span'), ...labels.map(l => el('span', 'h', l)), el('span', 'h', 'Correct'));
+C.forEach((row, i) => {
+  matrix.append(el('span', 'rh', labels[i]));
+  row.forEach((count, j) => {
+    const cell = el('span', 'c');
+    cell.tabIndex = 0;
+    cell.style.background = i === j ? 'var(--cell-diag)'
+      : count ? `color-mix(in oklab, var(--seq-hi) ${Math.round(100 * count / maxErr)}%, var(--seq-lo))` : 'var(--cell-zero)';
+    const share = rowTotal[i] ? ` (${pct(count / rowTotal[i])} of ${rowTotal[i]})` : '';
+    const args = i === j ? [`True ${labels[i]}`, [[count, `read correctly${share}`]]]
+      : [`True ${labels[i]}, read as ${labels[j]}`, [[count, `mistakes${share}`]]];
+    cell.addEventListener('pointermove', e => showTip(e.clientX, e.clientY, ...args));
+    cell.addEventListener('focus', () => { const r = cell.getBoundingClientRect(); showTip(r.right, r.top, ...args); });
+    cell.addEventListener('pointerleave', hideTip);
+    cell.addEventListener('blur', hideTip);
+    matrix.append(cell);
+  });
+  matrix.append(el('span', 'acc', rowTotal[i] ? pct(row[i] / rowTotal[i]) : 'no test data'));
+});
+fillTable(document.getElementById('classTable'), ['Label', 'Test images', 'Correct', 'Most often misread as'],
+  C.map((row, i) => {
+    const j = row.reduce((best, c, k) => (k !== i && c > (row[best] ?? -1) ? k : best), i === 0 ? 1 : 0);
+    return [labels[i], rowTotal[i], rowTotal[i] ? pct(row[i] / rowTotal[i]) : '–', row[j] ? `${labels[j]} (${row[j]})` : '–'];
+  }));
 </script>
 </body>
 </html>
