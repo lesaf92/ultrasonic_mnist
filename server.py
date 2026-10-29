@@ -17,23 +17,26 @@ ROOT = Path(__file__).parent
 CONFIG = tomllib.loads((ROOT / "config.toml").read_text())
 
 
-def to_area(a, b):
-    """Sensor distances in mm to a point on the drawing area in px, or None when outside it or without an echo.
-    ponytail: one axis per sensor (C1, the mounting geometry, is still open); trilateration would replace this."""
+def to_area(x, y):
+    """Distances in mm to a point on the drawing area in px, or None when outside it or without an echo.
+    As in docs/apparatus.jpeg, x comes from the sensor on the Y axis and y from the sensor on the X axis; y grows
+    upwards there and downwards on the page.
+    ponytail: a reading is the distance to the object, not its coordinate, so off a sensor's axis it reads long
+    (1% at the edge of a 15° beam); correct it with the sensors' positions (C16) if trails come out bent."""
     (x0, x1), (y0, y1) = CONFIG["esp32"]["x_mm"], CONFIG["esp32"]["y_mm"]
-    fx, fy = (a - x0) / (x1 - x0), (b - y0) / (y1 - y0)
-    if a < 0 or b < 0 or not (0 <= fx <= 1 and 0 <= fy <= 1):
+    fx, fy = (x - x0) / (x1 - x0), (y - y0) / (y1 - y0)
+    if x < 0 or y < 0 or not (0 <= fx <= 1 and 0 <= fy <= 1):
         return None
-    return [round(fx * CONFIG["area"]["width"], 1), round(fy * CONFIG["area"]["height"], 1)]
+    return [round(fx * CONFIG["area"]["width"], 1), round((1 - fy) * CONFIG["area"]["height"], 1)]
 
 
 def parse_reading(data):
-    """A UDP packet "<sensor A mm> <sensor B mm>" (-1 = no echo) to an event for the page, or None if malformed."""
+    """A UDP packet "<x mm> <y mm>" (-1 = no echo) to an event for the page, or None if malformed."""
     try:
-        a, b = (int(v) for v in data.decode().split())
+        x, y = (int(v) for v in data.decode().split())
     except ValueError:
         return None
-    return {"d": [a, b], "p": to_area(a, b)}
+    return {"d": [x, y], "p": to_area(x, y)}
 
 
 def listen_udp(server):

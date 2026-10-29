@@ -56,14 +56,15 @@ for img in cx_.reshape(-1, 28, 28):
 
 # ESP32: a UDP packet reaches an open /stream as an event with the point on the area
 (x0, x1), (y0, y1) = CONFIG["esp32"]["x_mm"], CONFIG["esp32"]["y_mm"]
-assert to_area(x0, y0) == [0, 0] and to_area(x1, y1) == [CONFIG["area"]["width"], CONFIG["area"]["height"]]
+W, H = CONFIG["area"]["width"], CONFIG["area"]["height"]
+assert to_area(x0, y0) == [0, H] and to_area(x1, y1) == [W, 0]  # the apparatus's y points up, the page's down
 assert to_area(-1, y0) is None and to_area(x1 + (x1 - x0), y0) is None
 stream = urllib.request.urlopen(base + "/stream")
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 for packet in (b"garbage", b"1 2 3", f"{x0} -1".encode(), f"{x0} {y1}".encode()):
     udp.sendto(packet, ("127.0.0.1", server.udp.getsockname()[1]))
 events = [json.loads(stream.readline().removeprefix(b"data: ") + stream.readline()) for _ in range(2)]
-assert events == [{"d": [x0, -1], "p": None}, {"d": [x0, y1], "p": [0, CONFIG["area"]["height"]]}], events
+assert events == [{"d": [x0, -1], "p": None}, {"d": [x0, y1], "p": [0, 0]}], events
 
 info = json.load(urllib.request.urlopen(base + "/model"))
 assert info["labels"][:10] == [str(d) for d in range(10)] and len(info["history"]) == info["epochs"]

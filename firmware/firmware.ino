@@ -1,5 +1,5 @@
-// Reads two HC-SR04 sensors in turn and sends each pair of distances to server.py over WiFi as one UDP packet,
-// "<sensor A mm> <sensor B mm>", -1 for no echo. The same line goes to the USB serial port for debugging.
+// Reads two HC-SR04 sensors at right angles in turn (docs/apparatus.jpeg) and sends each pair of distances to
+// server.py over WiFi as one UDP packet, "<x mm> <y mm>", -1 for no echo. The same line goes to the USB serial port.
 #include <WiFi.h>
 #include <WiFiUdp.h>
 
@@ -22,23 +22,23 @@ int readMm(int trig, int echo) {
 void setup() {
   Serial.begin(115200);
   Serial.setTxTimeoutMs(0);  // don't stall when no serial monitor is reading
-  pinMode(TRIG_A, OUTPUT);
-  pinMode(TRIG_B, OUTPUT);
-  pinMode(ECHO_A, INPUT);
-  pinMode(ECHO_B, INPUT);
+  pinMode(TRIG_X, OUTPUT);
+  pinMode(TRIG_Y, OUTPUT);
+  pinMode(ECHO_X, INPUT);
+  pinMode(ECHO_Y, INPUT);
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);  // power saving delays packets
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);  // reconnects by itself if the network drops
 }
 
 void loop() {
-  int a = readMm(TRIG_A, ECHO_A);
+  int x = readMm(TRIG_X, ECHO_X);
   delay(PING_GAP_MS);
-  int b = readMm(TRIG_B, ECHO_B);
+  int y = readMm(TRIG_Y, ECHO_Y);
   delay(PING_GAP_MS);
 
   char msg[24];
-  int n = snprintf(msg, sizeof msg, "%d %d", a, b);
+  int n = snprintf(msg, sizeof msg, "%d %d", x, y);
   static bool online = false;
   if (online != (WiFi.status() == WL_CONNECTED)) {
     online = !online;

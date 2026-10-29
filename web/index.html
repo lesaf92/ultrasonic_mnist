@@ -243,7 +243,7 @@ const fills = labels.map(l => {
 let source = 'mouse', strokes = [], timer = null, trailId = 0, drawing = false;
 const idleText = {
   mouse: `Draw a digit. It is read ${cfg.inference.timeout_s} s after the first point.`,
-  esp32: `Move your hand over the sensors. It is read ${cfg.inference.timeout_s} s after the first point in the area.`,
+  esp32: `Move the object through the zone both sensors cover. It is read ${cfg.inference.timeout_s} s after the first point in the area.`,
 };
 status.textContent = idleText.mouse;
 
@@ -356,13 +356,13 @@ area.addEventListener('pointerup', () => { drawing = false; });
 area.addEventListener('pointercancel', () => { drawing = false; });
 area.addEventListener('pointerleave', () => { if (!drawing) render(null); });
 
-// server.py relays each UDP packet from the ESP32: d = sensor distances in mm (-1: no echo), p = area point or null.
+// server.py relays each UDP packet from the ESP32: d = [x, y] distances in mm (-1: no echo), p = area point or null.
 let lastPacket = 0;
 const mm = v => v < 0 ? 'no echo' : `${v} mm`;
 new EventSource('/stream').onmessage = e => {
   const { d, p } = JSON.parse(e.data);
   lastPacket = Date.now();
-  live.textContent = `Sensor A ${mm(d[0])}, sensor B ${mm(d[1])}${p ? '' : ': outside the area'}`;
+  live.textContent = `x ${mm(d[0])}, y ${mm(d[1])}${p ? '' : ': outside the area'}`;
   if (source !== 'esp32') return;
   if (p) addPoint(...p, false);
   else render(null);

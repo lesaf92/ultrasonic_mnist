@@ -19,8 +19,9 @@ model = "model.npz"  # written by train.py
 
 [esp32]
 udp_port = 8001      # SERVER_PORT in firmware/config.h; listened on all network interfaces
-# Until the sensor mounting is chosen (plan C1), each sensor gives one axis. The distance at the first number
-# maps to the area's left (x) or top (y) edge, the second to the opposite edge; swap them to flip the axis.
-# Readings outside these ranges are dropped. Calibrate by reading the distances shown in the ESP32 tab.
-x_mm = [50, 350]     # sensor A
-y_mm = [50, 350]     # sensor B
+# The drawing area in the apparatus's own frame (docs/apparatus.jpeg): x is the distance from the sensor on the
+# Y axis, y the distance from the sensor on the X axis. Keep it inside the zone both ~15° beams cover, which is
+# small near the sensors (a beam is ~50 mm wide at 200 mm). Readings outside it are dropped. Calibrate with the
+# distances the ESP32 tab shows.
+x_mm = [150, 250]    # left edge, right edge
+y_mm = [150, 250]    # bottom edge, top edge

@@ -6,7 +6,7 @@ Candidates stay **Not confirmed** until the owner approves one or asks for it to
 
 **Big picture:** an ESP32 with two ultrasonic sensors tracks a point in 2D space and streams it over WiFi to a computer, whose web page draws the point's trail live and, after a configurable 3–5 s timeout, names the digit drawn using a neural network trained from scratch on MNIST or an equivalent dataset.
 
-**Now:** M2 is the objective being worked on, 2026-10-29: the firmware compiles and the server relays its UDP packets to the ESP32 tab (tested with a fake sender); next is flashing the board and testing with the sensors. S2 and S3 are done. All of it is in 18c1583. C1 (mounting) still waits on the owner.
+**Now:** M2 is the objective being worked on, 2026-10-29: the firmware compiles and the server relays its UDP packets to the ESP32 tab (tested with a fake sender); next is flashing the board and testing with the sensors. S2 and S3 are done. All of it is in 18c1583. The owner's [apparatus drawing](apparatus.jpeg) settled C1, 2026-10-29; the code follows it but is not committed yet.
 
 ## Main quests
 
@@ -14,7 +14,7 @@ Objectives that lead to the big picture, in the planned order. M1–M6 come from
 
 | # | Objective | Status | Git | Documentation |
 |---|---|---|---|---|
-| M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Partly done: the firmware reads both HC-SR04s; until C1 is chosen each sensor gives one axis, with its range in `config.toml`; left: test on the rig | 18c1583, 2026-10-29 | [README: ESP32](../README.md#esp32), [config](../config.toml) |
+| M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Partly done: the firmware reads both HC-SR04s; the sensor on the Y axis gives x, the one on the X axis gives y, with the area's ranges in `config.toml`; left: test on the rig | 18c1583, 2026-10-29; apparatus frame not committed yet | [Apparatus](apparatus.jpeg), [README: ESP32](../README.md#esp32), [config](../config.toml) |
 | M2 | The ESP32 streams the points to the computer over WiFi | Partly done: firmware sends each reading as a UDP packet, `server.py` relays it to the page on `/stream`; left: flash the board and test it | 18c1583, 2026-10-29 | [README: ESP32](../README.md#esp32), [firmware settings](../firmware/config.example.h) |
 | M3 | A web page on the computer draws the trail in real time | Partly done: page with Mouse and ESP32 tabs; the ESP32 tab draws streamed points (tested with a fake sender) and waits on M2's board test | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
 | M4 | A trail ends after a fixed, configurable timeout (3–5 s) and becomes one digit drawing | Done; the timeout counts from the first point (C6 asks if that is right) | e9c1862, 2026-10-28 | [config](../config.toml) |
@@ -42,12 +42,13 @@ Grouped by the objective each one would serve. "Came from" points to where the i
 | # | Candidate | Serves | Came from | Status |
 |---|---|---|---|---|
 | | **Sensor rig** | | | |
-| C1 | Mounting geometry: two sensors on one baseline with the point found by trilateration, or at right angles with one axis each | M1 | Planning | Not confirmed, waits on owner |
+| C1 | Mounting geometry: two sensors on one baseline with the point found by trilateration, or at right angles with one axis each | M1 | Planning | Done: the owner chose right angles, one axis each, in the [apparatus drawing](apparatus.jpeg), 2026-10-29 |
 | C2 | Sensor model: HC-SR04 runs at 5 V and needs a divider on its echo pin for the ESP32; a 3.3 V part (HC-SR04P, RCWL-1601) does not | M1 | Planning | Done: the owner chose HC-SR04, 2026-10-29; the divider is in [README: ESP32](../README.md#esp32) |
 | C3 | Fire the two sensors in turn so their pings don't cross; this caps the rate near 10–20 points/s | M1, M3 | Planning | Done in M2: A then B, 25 ms apart (`PING_GAP_MS`), ~17 points/s |
-| C4 | Calibration knobs (baseline, sensor offsets, drawing-area bounds) settable without reflashing | M1 | Planning | Partly done in M2: the area bounds are the `[esp32]` ranges in `config.toml`; left: baseline and offsets, which depend on C1 |
+| C4 | Calibration knobs (baseline, sensor offsets, drawing-area bounds) settable without reflashing | M1 | Planning | Partly done in M2: the area is set as distance ranges from each sensor in `config.toml`, which absorbs where the sensors sit; left: their positions along the axes, needed only for C16 |
 | C5 | Smooth noisy readings: median of a few pings, drop out-of-range jumps | M1, M6 | Planning | Not confirmed |
 | C15 | Find the computer without its IP in `firmware/config.h` (mDNS name or UDP broadcast), so a new DHCP address doesn't need a reflash | M2 | Building M2, 2026-10-29 | Not confirmed |
+| C16 | Correct off-axis readings: a sensor gives the distance to the object, not its coordinate, so away from its axis it reads long (1% at the edge of a 15° beam); needs the sensors' positions along the axes | M1 | [Apparatus drawing](apparatus.jpeg), 2026-10-29 | Not confirmed |
 | | **Trail capture** | | | |
 | C6 | The timeout counts from a trail's first point (as built in M4); the alternative is counting from the last movement | M4 | [Brief](../README.md#brief): "after a fixed-configurable timeout" | Not confirmed, waits on owner |
 | C7 | Pen-up: moving out of range splits the trail into strokes, so two-stroke digits (4, 5) don't gain a joining line | M4, M6 | Planning | Not confirmed |

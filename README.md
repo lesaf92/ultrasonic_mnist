@@ -7,6 +7,7 @@ Digits drawn in the air: two ultrasonic sensors on an ESP32 track a point, the c
 | File | What it holds |
 |---|---|
 | [docs/plan.md](docs/plan.md) | Objectives, their status, and candidate ideas waiting for approval |
+| [docs/apparatus.jpeg](docs/apparatus.jpeg) | Where the two sensors sit and point, and the zone where they measure the object |
 | [plan-recipe.md](plan-recipe.md) | How the plan is built and kept up to date |
 | [config.toml](config.toml) | Main parameters: area size, pencil and trail width, inference timeout, server, ESP32 port and calibration |
 | [firmware/config.example.h](firmware/config.example.h) | ESP32 settings: WiFi, the computer's address, HC-SR04 pins and wiring, ping timing |
@@ -29,6 +30,10 @@ The page only reads drawings. To teach it your own symbols, put 30+ images of ea
 
 The firmware in `firmware/` reads two HC-SR04 sensors in turn on an ESP32-S3 and sends each pair of distances to `server.py` over WiFi as one UDP packet, ~17 per second.
 
+![Two HC-SR04 sensors at right angles: one on the Y axis facing along x, one on the X axis facing along y; the object is measured where their beams overlap](docs/apparatus.jpeg)
+
+The sensors sit at right angles. The one on the Y axis faces along x and measures the object's x; the one on the X axis faces along y and measures its y. The object is drawn only while it is inside both ~15° beams, a zone that is small near the sensors (a beam is ~50 mm wide at 200 mm), so a thin object such as a pen tip or a finger works best.
+
 1. Wire each HC-SR04 to 5 V and GND, TRIG to its pin, and ECHO through a divider (1 kΩ to the pin, 2 kΩ from the pin to GND): ECHO is 5 V and the ESP32-S3 takes 3.3 V.
 2. `cp firmware/config.example.h firmware/config.h` and fill in the WiFi network, this computer's address, and the pins. `config.h` is gitignored.
 3. Flash it. Arduino IDE: open `firmware/firmware.ino`, board *ESP32S3 Dev Module*, *USB CDC On Boot: Enabled*. Or with arduino-cli:
@@ -38,7 +43,7 @@ The firmware in `firmware/` reads two HC-SR04 sensors in turn on an ESP32-S3 and
    If the upload can't connect, hold BOOT, press RESET, release BOOT, and upload again.
 4. Let the packets in if a firewall is on, e.g. `sudo ufw allow 8001/udp`, then start `server.py` and open the ESP32 tab. The serial monitor (115200 baud) shows the WiFi state and every reading too.
 
-Until the mounting is chosen, sensor A gives x and sensor B gives y; set the distance range of each in `[esp32]` in `config.toml`, using the distances the ESP32 tab shows.
+The drawing area is set in `[esp32]` in `config.toml` as a range of x and of y distances; read them off the ESP32 tab while you move the object to the zone's edges.
 
 ## Brief
 
