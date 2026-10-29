@@ -21,7 +21,7 @@ int readMm(int trig, int echo) {
 
 void setup() {
   Serial.begin(115200);
-  Serial.setTxTimeoutMs(0);  // don't stall when no serial monitor is reading
+  // keep Serial's default TX timeout: with 0, core 3.3.5 retries forever once no serial monitor reads the port
   pinMode(TRIG_X, OUTPUT);
   pinMode(TRIG_Y, OUTPUT);
   pinMode(ECHO_X, INPUT);
