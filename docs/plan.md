@@ -6,7 +6,7 @@ Candidates stay **Not confirmed** until the owner approves one or asks for it to
 
 **Big picture:** an ESP32 with two ultrasonic sensors tracks a point in 2D space and streams it over WiFi to a computer, whose web page draws the point's trail live and, after a configurable 3–5 s timeout, names the digit drawn using a neural network trained from scratch on MNIST or an equivalent dataset.
 
-**Now:** M2 is the objective being worked on, 2026-10-29: the firmware compiles and the server relays its UDP packets to the ESP32 tab (tested with a fake sender); next is flashing the board and testing with the sensors. S2 and S3 are done. None of this is committed yet. C1 (mounting) still waits on the owner.
+**Now:** M2 is the objective being worked on, 2026-10-29: the firmware compiles and the server relays its UDP packets to the ESP32 tab (tested with a fake sender); next is flashing the board and testing with the sensors. S2 and S3 are done. All of it is in 18c1583. C1 (mounting) still waits on the owner.
 
 ## Main quests
 
@@ -14,8 +14,8 @@ Objectives that lead to the big picture, in the planned order. M1–M6 come from
 
 | # | Objective | Status | Git | Documentation |
 |---|---|---|---|---|
-| M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Partly done: the firmware reads both HC-SR04s; until C1 is chosen each sensor gives one axis, with its range in `config.toml`; left: test on the rig | — | [README: ESP32](../README.md#esp32), [config](../config.toml) |
-| M2 | The ESP32 streams the points to the computer over WiFi | Partly done: firmware sends each reading as a UDP packet, `server.py` relays it to the page on `/stream`; left: flash the board and test it | — | [README: ESP32](../README.md#esp32), [firmware settings](../firmware/config.example.h) |
+| M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Partly done: the firmware reads both HC-SR04s; until C1 is chosen each sensor gives one axis, with its range in `config.toml`; left: test on the rig | 18c1583, 2026-10-29 | [README: ESP32](../README.md#esp32), [config](../config.toml) |
+| M2 | The ESP32 streams the points to the computer over WiFi | Partly done: firmware sends each reading as a UDP packet, `server.py` relays it to the page on `/stream`; left: flash the board and test it | 18c1583, 2026-10-29 | [README: ESP32](../README.md#esp32), [firmware settings](../firmware/config.example.h) |
 | M3 | A web page on the computer draws the trail in real time | Partly done: page with Mouse and ESP32 tabs; the ESP32 tab draws streamed points (tested with a fake sender) and waits on M2's board test | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
 | M4 | A trail ends after a fixed, configurable timeout (3–5 s) and becomes one digit drawing | Done; the timeout counts from the first point (C6 asks if that is right) | e9c1862, 2026-10-28 | [config](../config.toml) |
 | M5 | A neural network trained from scratch on MNIST, or an equivalent dataset | Partly done: C8 and C9 wait on owner | e9c1862, 2026-10-28 | — |
@@ -32,8 +32,8 @@ Tangents such as tooling, simulators, viewers or teaching material. S1 feeds M3,
 | # | Objective | Status | Git | Documentation |
 |---|---|---|---|---|
 | S1 | Mouse tab: draw with the mouse to test trail, timeout and inference without hardware (was C12, mouse part) | Done | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
-| S2 | Model tab: architecture, per-epoch accuracy, confusion matrix, dataset source, trail-to-input steps; read from the model file so it follows each retraining | Done | — | [Model tab](../web/index.html) |
-| S3 | Custom labels: images copied into `data/custom/<label>/` are made MNIST-style by `train.py` and added as extra outputs; the page itself never records or trains | Done | — | [Model tab: train your own symbol](../web/index.html), [README: run](../README.md#run) |
+| S2 | Model tab: architecture, per-epoch accuracy, confusion matrix, dataset source, trail-to-input steps; read from the model file so it follows each retraining | Done | 18c1583, 2026-10-29 | [Model tab](../web/index.html) |
+| S3 | Custom labels: images copied into `data/custom/<label>/` are made MNIST-style by `train.py` and added as extra outputs; the page itself never records or trains | Done | 18c1583, 2026-10-29 | [Model tab: train your own symbol](../web/index.html), [README: run](../README.md#run) |
 
 ## Candidates (not confirmed)
 
