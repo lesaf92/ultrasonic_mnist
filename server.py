@@ -5,6 +5,7 @@ import queue
 import socket
 import threading
 import tomllib
+from collections import deque
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -31,18 +32,41 @@ def to_area(x, y):
 
 
 def parse_reading(data):
-    """A UDP packet "<x mm> <y mm>" (-1 = no echo) to an event for the page, or None if malformed."""
+    """A UDP packet "<x mm> <y mm>" (-1 = no echo) to (x, y), or None if malformed."""
     try:
         x, y = (int(v) for v in data.decode().split())
     except ValueError:
         return None
-    return {"d": [x, y], "p": to_area(x, y)}
+    return x, y
+
+
+class Smoother:
+    """One sensor's readings: the median of the last few drops single-ping spikes and dropouts, then a low-pass
+    filter (exponential moving average) evens out jitter. No echo (-1) passes through and restarts the low-pass,
+    so a trail that comes back doesn't drift in from where the last one ended."""
+
+    def __init__(self, median_of, low_pass):
+        self.recent = deque(maxlen=median_of)
+        self.weight = low_pass
+        self.avg = None
+
+    def __call__(self, reading):
+        self.recent.append(reading)
+        median = sorted(self.recent)[len(self.recent) // 2]
+        if median < 0:
+            self.avg = None
+            return -1
+        self.avg = median if self.avg is None else self.avg + self.weight * (median - self.avg)
+        return round(self.avg)
 
 
 def listen_udp(server):
     while True:
-        msg = parse_reading(server.udp.recvfrom(64)[0])
-        for q in list(server.clients) if msg else []:
+        reading = parse_reading(server.udp.recvfrom(64)[0])
+        if reading:
+            x, y = server.smooth_x(reading[0]), server.smooth_y(reading[1])
+            msg = {"d": [x, y], "p": to_area(x, y)}
+        for q in list(server.clients) if reading else []:
             try:
                 q.put_nowait(msg)
             except queue.Full:  # a page that stopped reading
@@ -114,6 +138,8 @@ def make_server(host, port, udp_port):
     server.info = json.loads(str(model.pop("info")))
     server.model = model
     server.clients = set()  # one queue per open page
+    server.smooth_x, server.smooth_y = (Smoother(CONFIG["esp32"]["median_of"], CONFIG["esp32"]["low_pass"])
+                                        for _ in "xy")
     server.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.udp.bind(("0.0.0.0", udp_port))  # the ESP32 is on the WiFi, not on this machine
     threading.Thread(target=listen_udp, args=(server,), daemon=True).start()

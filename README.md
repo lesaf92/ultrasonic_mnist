@@ -43,7 +43,7 @@ The sensors sit at right angles. The one on the Y axis faces along x and measure
    If the upload can't connect, hold BOOT, press RESET, release BOOT, and upload again.
 4. Let the packets in if a firewall is on, e.g. `sudo ufw allow 8001/udp`, then start `server.py` and open the ESP32 tab. The serial monitor (115200 baud) shows the WiFi state and every reading too.
 
-The drawing area is set in `[esp32]` in `config.toml` as a range of x and of y distances; read them off the ESP32 tab while you move the object to the zone's edges.
+The drawing area is set in `[esp32]` in `config.toml` as a range of x and of y distances; read them off the ESP32 tab while you move the object to the zone's edges. The server smooths each sensor's readings before drawing: a median of the last 3 drops stray pings, then a low-pass filter evens out jitter (`median_of`, `low_pass`).
 
 ## Brief
 

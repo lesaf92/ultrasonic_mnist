@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
-from server import CONFIG, make_server, to_area
+from server import CONFIG, Smoother, make_server, to_area
 from train import load_custom, load_mnist
 
 server = make_server("127.0.0.1", 0, 0)
@@ -53,6 +53,12 @@ for img in cx_.reshape(-1, 28, 28):
     ys, xs = np.nonzero(img > 0.2)
     assert img.max() > 0.9 and img[0].max() == 0 and max(np.ptp(ys), np.ptp(xs)) <= 20
     assert abs((np.indices(img.shape)[0] * img).sum() / img.sum() - 13.5) <= 0.5
+
+# Smoothing: the median drops a spike and a dropout; the low-pass follows halfway and restarts after no echo
+median = Smoother(3, 1.0)
+assert [median(v) for v in (100, 100, 900, 100, -1, 100, -1, -1)] == [100, 100, 100, 100, 100, 100, -1, -1]
+low_pass = Smoother(1, 0.5)
+assert [low_pass(v) for v in (100, 200, 200, -1, 300)] == [100, 150, 175, -1, 300]
 
 # ESP32: a UDP packet reaches an open /stream as an event with the point on the area
 (x0, x1), (y0, y1) = CONFIG["esp32"]["x_mm"], CONFIG["esp32"]["y_mm"]
