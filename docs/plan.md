@@ -6,7 +6,7 @@ Candidates stay **Not confirmed** until the owner approves one or asks for it to
 
 **Big picture:** an ESP32 with two ultrasonic sensors tracks a point in 2D space and streams it over WiFi to a computer, whose web page draws the point's trail live and, after a configurable 3–5 s timeout, names the digit drawn using a neural network trained from scratch on MNIST or an equivalent dataset.
 
-**Now:** the last objective finished is M2, 2026-10-29: the flashed board streams ~16 readings/s over WiFi to the ESP32 tab (with the serial-stall fix in bb0c727). M1.1 (smoothing, was C5) is built, not committed yet. Next is M1 on the rig: the sensor measuring y gets no echo yet, then calibrating the area. S2 and S3 are done in 18c1583. The owner's [apparatus drawing](apparatus.jpeg) settled C1, 2026-10-29; the code follows it since 906ac48.
+**Now:** the last objective finished is M2, 2026-10-29: the flashed board streams ~16 readings/s over WiFi to the ESP32 tab (with the serial-stall fix in bb0c727). M1.1 (smoothing, was C5) is done in cca98a3. Next is M1 on the rig: the sensor measuring y gets no echo yet, then calibrating the area. S2 and S3 are done in 18c1583. The owner's [apparatus drawing](apparatus.jpeg) settled C1, 2026-10-29; the code follows it since 906ac48.
 
 ## Main quests
 
@@ -15,7 +15,7 @@ Objectives that lead to the big picture, in the planned order. M1–M6 come from
 | # | Objective | Status | Git | Documentation |
 |---|---|---|---|---|
 | M1 | Two ultrasonic sensors on an ESP32 give one (x, y) point inside a drawing area | Partly done: the firmware reads both HC-SR04s; the sensor on the Y axis gives x, the one on the X axis gives y, with the area's ranges in `config.toml`. On the board the x sensor reads; left: the y sensor gets no echo, then calibrating the area | 18c1583, 906ac48, 2026-10-29 | [Apparatus](apparatus.jpeg), [README: ESP32](../README.md#esp32), [config](../config.toml) |
-| M1.1 | Smooth each sensor's readings in `server.py`: a median of the last 3 drops single-ping spikes and dropouts, then a low-pass filter evens out jitter; both set in `config.toml` (was C5) | Done: on the board's x readings of a still object, the step between readings fell from 5.9 to 2.0 mm | — | [config](../config.toml), [README: ESP32](../README.md#esp32) |
+| M1.1 | Smooth each sensor's readings in `server.py`: a median of the last 3 drops single-ping spikes and dropouts, then a low-pass filter evens out jitter; both set in `config.toml` (was C5) | Done: on the board's x readings of a still object, the step between readings fell from 5.9 to 2.0 mm | cca98a3, 2026-10-29 | [config](../config.toml), [README: ESP32](../README.md#esp32) |
 | M2 | The ESP32 streams the points to the computer over WiFi | Done: the board sends each reading as a UDP packet, ~16 per second reach the page through `server.py`'s `/stream` | 18c1583, bb0c727, 2026-10-29 | [README: ESP32](../README.md#esp32), [firmware settings](../firmware/config.example.h) |
 | M3 | A web page on the computer draws the trail in real time | Partly done: page with Mouse and ESP32 tabs; the ESP32 tab receives the board's readings; a real trail waits on M1 | e9c1862, 2026-10-28 | [README: run](../README.md#run) |
 | M4 | A trail ends after a fixed, configurable timeout (3–5 s) and becomes one digit drawing | Done; the timeout counts from the first point (C6 asks if that is right) | e9c1862, 2026-10-28 | [config](../config.toml) |
